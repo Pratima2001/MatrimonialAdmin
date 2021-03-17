@@ -1,0 +1,49 @@
+
+
+uploadImage() async {
+    // HTML input element
+    InputElement uploadInput = FileUploadInputElement();
+    uploadInput.click();
+
+    uploadInput.onChange.listen(
+      (changeEvent) {
+        final file = uploadInput.files.first;
+        final reader = FileReader();
+
+        reader.readAsDataUrl(file);
+
+        reader.onLoadEnd.listen(
+          // After file finiesh reading and loading, it will be uploaded to firebase storage
+          (loadEndEvent) async {
+            uploadToFirebase(file);
+          },
+        );
+      },
+    );
+  }
+
+  f1.UploadTask _uploadTask;
+
+  /// Upload file to firebase storage and updates [_uploadTask] to the latest
+  /// file upload
+  uploadToFirebase(File imageFile) async {
+    DateTime s = DateTime.now();
+    var a = s.day + s.month + s.year + s.hour + s.minute;
+    final filePath = id + "/images/profileImage.png";
+    setState(() {
+      _uploadTask = f1
+          .storage()
+          .refFromURL('gs://matrimonial-1c9e5.appspot.com/UserImage')
+          .child(filePath.trim())
+          .put(imageFile);
+      getimage(filePath);
+    });
+  }
+
+  getimage(String filePath) {
+    var dowurl = FirebaseStorage.instance
+        .refFromURL('gs://matrimonial-1c9e5.appspot.com/UserImage/')
+        .child(filePath.trim())
+        .getDownloadURL()
+        .then((value) => print(value));
+  }
